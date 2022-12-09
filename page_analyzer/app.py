@@ -1,5 +1,7 @@
 from flask import Flask
+from dotenv import dotenv_values
 
+dotenv_values()
 app = Flask(__name__)
 
 
