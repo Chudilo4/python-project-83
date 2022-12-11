@@ -21,22 +21,34 @@ def hello_world():
         title='Анализатор страниц',
     )
 
-@app.route('/urls', methods=['GET', 'POST'])
+
+@app.route('/urls/', methods=['GET', 'POST'])
 def urls():
     if request.method == 'POST':
         a = request.form.to_dict()
         if validators.url(a['url']):
             cur = conn.cursor()
             dt = datetime.date.today()
-            print(dt)
             names = a['url']
             cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);", (names, dt))
+            cur.execute("SELECT id FROM urls WHERE name=(%s);", (names,))
+            id = cur.fetchone()
+            print(id)
             cur.close()
-            return redirect('/urls')
+            return redirect(f'/urls/{id[0]}')
         return redirect('/')
     else:
         cur = conn.cursor()
         cur.execute('SELECT * FROM urls;')
-        return render_template('urls.html', context={"site": cur.fetchone(),
-                                                     }
-                               )
+        site = cur.fetchall()
+        cur.close()
+        return render_template('urls.html', site=site)
+
+
+@app.route('/urls/<int:id>/', methods=['GET', 'POST'])
+def show_url(id):
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM urls WHERE id = (%s);', (id, ))
+    site = cur.fetchone()
+    cur.close()
+    return render_template('show_url.html', site=site)

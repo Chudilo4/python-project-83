@@ -13,10 +13,10 @@
       </tr>
 {% for s in site %}
         <tr>
-          <td>{{s.id}}</td>
+          <td>{{s[0]}}</td>{# вытаскиваем id #}
           <td>
-            <a href="/urls/1">
-              {{s.name}}
+            <a href="/urls/{{ s[0] }}">
+              {{s[1]}} {# вытаскиваем имя #}
             </a>
           </td>
           <td>
