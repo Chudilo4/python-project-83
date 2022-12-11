@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 from dotenv import dotenv_values
 import psycopg2
 import os
@@ -30,8 +30,10 @@ def urls():
             cur = conn.cursor()
             dt = datetime.date.today()
             names = a['url']
-            cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);", (names, dt))
-            cur.execute("SELECT id FROM urls WHERE name=(%s);", (names,))
+            cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);",
+                        (names, dt))
+            cur.execute("SELECT id FROM urls WHERE name=(%s);",
+                        (names,))
             id = cur.fetchone()
             print(id)
             cur.close()
