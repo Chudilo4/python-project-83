@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 from flask import (
     Flask, render_template,
     request, redirect,
@@ -86,7 +87,8 @@ def show_url(id):
     cur.execute('SELECT * FROM urls WHERE id=(%s);',
                 (id,))
     site = cur.fetchone()
-    cur.execute('SELECT * FROM url_checks WHERE url_id = (%s);',
+    cur.execute('SELECT * FROM url_checks WHERE url_id = (%s)'
+                'ORDER BY created_at DESC;',
                 (id,))
     site2 = cur.fetchall()
     cur.close()
@@ -108,10 +110,23 @@ def urls_id_checks_post(id):
         site = cur.fetchone()
         r = requests.get(site[0])
         code = r.status_code
+        html = r.text
+        soup = BeautifulSoup(html, 'html.parser')
+        tag = {'h1': soup.find('h1').text if soup.find('h1').text else '',
+               'title': soup.find('title').text if soup.find('title').text else '',
+               'meta': soup.find('meta').get('content') if soup.find('meta').get('content') else ''
+               }
+        # for t in tag:
+        #     if soup.find(t):
+        #         if soup.find('meta').get('content'):
+        #             tag['meta'] =
+        #             pass
+        #         tag[t] = soup.find(t).text
+        print(tag)
         cur = conn.cursor()
-        cur.execute('INSERT INTO url_checks (url_id, created_at, status_code) '
-                    'VALUES ((%s), (%s), (%s));',
-                    (id, dt, code,))
+        cur.execute('INSERT INTO url_checks (url_id, created_at, status_code, h1, description, title) '
+                    'VALUES ((%s), (%s), (%s), (%s), (%s), (%s));',
+                    (id, dt, code, tag['h1'], tag['meta'], tag['title']))
         cur.close()
         flash('Страница успешно проверена')
         return redirect(url_for('show_url', id=id))
