@@ -1,3 +1,4 @@
+import requests
 from flask import (
     Flask, render_template,
     request, redirect,
@@ -64,7 +65,9 @@ def urls_add():
 @app.get('/urls/')
 def get_urls():
     cur = conn.cursor()
-    cur.execute('SELECT urls.id, urls.name, MAX(url_checks.created_at) '
+    cur.execute('SELECT urls.id, urls.name,'
+                'MAX(url_checks.status_code),'
+                'MAX(url_checks.created_at) '
                 'FROM urls '
                 'LEFT JOIN url_checks '
                 'ON urls.id = url_checks.url_id '
@@ -97,11 +100,21 @@ def show_url(id):
 
 @app.post('/urls/<int:id>/checks')
 def urls_id_checks_post(id):
-    dt = datetime.datetime.now()
-    cur = conn.cursor()
-    cur.execute('INSERT INTO url_checks (url_id, created_at) '
-                'VALUES ((%s), (%s));',
-                (id, dt))
-    cur.close()
-    flash('Страница успешно проверена')
-    return redirect(url_for('show_url', id=id))
+    try:
+        dt = datetime.datetime.now()
+        cur = conn.cursor()
+        cur.execute('SELECT name FROM urls WHERE id=(%s);',
+                    (id,))
+        site = cur.fetchone()
+        r = requests.get(site[0])
+        code = r.status_code
+        cur = conn.cursor()
+        cur.execute('INSERT INTO url_checks (url_id, created_at, status_code) '
+                    'VALUES ((%s), (%s), (%s));',
+                    (id, dt, code,))
+        cur.close()
+        flash('Страница успешно проверена')
+        return redirect(url_for('show_url', id=id))
+    except requests.exceptions.RequestException:
+        flash('Произошла ошибка при проверке')
+        return redirect(url_for('show_url', id=id))
