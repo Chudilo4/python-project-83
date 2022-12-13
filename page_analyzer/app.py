@@ -56,10 +56,12 @@ def urls_add():
 @app.get('/urls/')
 def get_urls():
     cur = conn.cursor()
-    cur.execute('SELECT urls.id, urls.name, url_checks.created_at '
-                'FROM urls JOIN url_checks '
+    cur.execute('SELECT urls.id, urls.name, MAX(url_checks.created_at) '
+                'FROM urls '
+                'LEFT JOIN url_checks '
                 'ON urls.id = url_checks.url_id '
-                'ORDER BY urls.id;')
+                'GROUP BY urls.id '
+                'ORDER BY urls.id ASC')
     site = cur.fetchall()
     cur.close()
     return render_template('urls.html', site=site)
@@ -81,14 +83,6 @@ def show_url(id):
 def urls_id_checks_post(id):
     dt = datetime.datetime.now()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM url_checks WHERE url_id = (%s);', (id,))
-    id_find = cur.fetchone()
-    if id_find:
-        cur.execute('UPDATE url_checks SET created_at = (%s) '
-                    'WHERE url_id = (%s);', (dt, id,))
-        cur.close()
-        flash('Страница успешно проверена')
-        return redirect(url_for('show_url', id=id))
     cur.execute('INSERT INTO url_checks (url_id, created_at) VALUES ((%s), (%s));', (id, dt))
     cur.close()
     flash('Страница успешно проверена')
