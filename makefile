@@ -9,3 +9,5 @@ install:
 	poetry install
 check:
 	poetry check
+debug:
+	poetry run flask --app page_analyzer:app --debug run

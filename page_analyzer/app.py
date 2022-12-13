@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, get_flashed_messages
 from dotenv import dotenv_values
 import psycopg2
 import os
 import validators
 import datetime
-import requests
 
 
 # Connect to your postgres DB
@@ -13,13 +12,16 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
 app = Flask(__name__)
+app.secret_key = 'sdfsggao23ko3t89*U$t4nt4*H#rhfnsdnm,'
 
 
 @app.route('/')
 def hello_world():
+    messages = get_flashed_messages()
     return render_template(
         'home.html',
         title='Анализатор страниц',
+        messages=messages
     )
 
 
@@ -34,11 +36,13 @@ def urls_add():
         id_find = cur.fetchone()
         cur.close()
         if id:
-            return redirect(f'/urls/{id_find[0]}')
+            flash('Не верный URL')
+            return redirect(f'/')
         cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);",
-                   (form['url'], dt))
+                    (form['url'], dt))
         id_insert = cur.fetchone()
         cur.close()
+        flash('Страница успешно добавлена')
         return redirect(f'/urls/{id_insert[0]}')
 
 
@@ -60,7 +64,8 @@ def show_url(id):
     cur.execute('SELECT * FROM url_checks WHERE url_id = (%s);', (id,))
     site2 = cur.fetchall()
     cur.close()
-    return render_template('show_url.html', site=site, site2=site2)
+    messages = get_flashed_messages()
+    return render_template('show_url.html', site=site, site2=site2, messages=messages)
 
 
 @app.post('/urls/<int:id>/checks')
@@ -69,5 +74,6 @@ def urls_id_checks_post(id):
     cur = conn.cursor()
     cur.execute('INSERT INTO url_checks (created_at, url_id ) VALUES (%s, %s);', (dt, id))
     cur.close()
-    return redirect(f'/urls/{id}/')
+    flash('Страница успешно проверена')
+    return redirect(f'/urls/{id}/', )
 
