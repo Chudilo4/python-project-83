@@ -38,16 +38,16 @@
         <th>description</th>
         <th>Дата создания</th>
     </tr>
-
+{% for s in site2 %}
     <tr>
-        <td>{{site2[0]}}</td>
-        <td>{{site2[2]}}</td>
-        <td>{{site2[3]}}</td>
-        <td>{{site2[4]}}</td>
-        <td>{{site2[5]}}</td>
-        <td>{{site2[6]}}</td>
+        <td>{{s[0]}}</td>
+        <td>{{s[2]}}</td>
+        <td>{{s[3]}}</td>
+        <td>{{s[4]}}</td>
+        <td>{{s[5]}}</td>
+        <td>{{s[6]}}</td>
     </tr>
-
+{% endfor %}
       </tbody>
     </table>
   </div>

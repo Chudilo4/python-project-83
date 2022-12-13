@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from dotenv import dotenv_values
 import psycopg2
 import os
@@ -15,7 +15,7 @@ conn.autocommit = True
 app = Flask(__name__)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def hello_world():
     return render_template(
         'home.html',
@@ -23,62 +23,51 @@ def hello_world():
     )
 
 
-@app.route('/urls/', methods=['GET', 'POST'])
-def urls():
-    if request.method == 'POST':
-        a = request.form.to_dict()
-        if validators.url(a['url']):
-            cur = conn.cursor()
-            dt = datetime.date.today()
-            names = a['url']
-            r = cur.execute('SELECT id FROM urls WHERE name=(%s), (names);')
-            if r:
-                cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);",
-                            (names, dt))
-                id = cur.fetchone()
-                cur.close()
-                return redirect(f'/urls/{id[0]}')
-            id = cur.fetchone()
-            cur.close()
-            return redirect(f'/urls/{id[0]}')
-        return redirect('/')
-    else:
+@app.post('/urls/add')
+def urls_add():
+    dt = datetime.datetime.now()
+    form = request.form.to_dict()
+    valid_url = validators.url(form['url'])
+    if valid_url:
         cur = conn.cursor()
-        cur.execute('SELECT urls.id, urls.name, url_checks.created_at, url_checks.status_code '
-                    'FROM urls LEFT JOIN url_checks ON urls.id = url_checks.url_id;')
-        site = cur.fetchall()
-        print(site)
+        cur.execute('SELECT id FROM urls WHERE name=(%s);', (form['url'],))
+        id_find = cur.fetchone()
         cur.close()
-        return render_template('urls.html', site=site)
+        if id:
+            return redirect(f'/urls/{id_find[0]}')
+        cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);",
+                   (form['url'], dt))
+        id_insert = cur.fetchone()
+        cur.close()
+        return redirect(f'/urls/{id_insert[0]}')
 
 
-@app.route('/urls/<int:id>/', methods=['GET', 'POST'])
+@app.get('/urls/')
+def get_urls():
+    cur = conn.cursor()
+    cur.execute('SELECT urls.id, urls.name, url_checks.created_at '
+                'FROM urls LEFT JOIN url_checks '
+                'ON urls.id = url_checks.url_id;')
+    site = cur.fetchall()
+    return render_template('urls.html', site=site)
+
+
+@app.get('/urls/<int:id>/')
 def show_url(id):
     cur = conn.cursor()
     cur.execute('SELECT * FROM urls WHERE id=(%s);', (id,))
     site = cur.fetchone()
-    cur.execute('SELECT * FROM url_checks WHERE url_id=(%s);', (id,))
-    site2 = cur.fetchone()
-    print(site2)
-    print(site)
+    cur.execute('SELECT * FROM url_checks WHERE url_id = (%s);', (id,))
+    site2 = cur.fetchall()
     cur.close()
     return render_template('show_url.html', site=site, site2=site2)
 
 
 @app.post('/urls/<int:id>/checks')
 def urls_id_checks_post(id):
-    dt = datetime.date.today()
+    dt = datetime.datetime.now()
     cur = conn.cursor()
-    a = cur.execute('SELECT * FROM url_checks WHERE url_id = (%s)', (id,))
-    print(bool(a))
-    print(a)
-    if a:
-        cur.execute('UPDATE url_checks '
-                    'SET created_at = (%s) WHERE url_id = (%s);', (dt, id))
-        cur.close()
-        return redirect(f'/urls/{id}/')
-    cur.execute("INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s);",
-                (id, dt))
+    cur.execute('INSERT INTO url_checks (created_at, url_id ) VALUES (%s, %s);', (dt, id))
     cur.close()
     return redirect(f'/urls/{id}/')
 
