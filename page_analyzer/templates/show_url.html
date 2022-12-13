@@ -24,11 +24,10 @@
   </div>
 
     <h2 class="mt-5 mb-3">Проверки</h2>
-    <form method="post" action="/urls/1/checks">
+    <form method="post" action="/urls/{{site[0]}}/checks">
     <input type="submit" class="btn btn-primary" value="Запустить проверку">
     </form>
-
-  <div>
+    <div>
     <table class="table table-bordered table-hover mt-2" data-test="checks">
       <tbody>
     <tr>
@@ -38,6 +37,15 @@
         <th>title</th>
         <th>description</th>
         <th>Дата создания</th>
+    </tr>
+
+    <tr>
+        <td>{{site2[0]}}</td>
+        <td>{{site2[2]}}</td>
+        <td>{{site2[3]}}</td>
+        <td>{{site2[4]}}</td>
+        <td>{{site2[5]}}</td>
+        <td>{{site2[6]}}</td>
     </tr>
 
       </tbody>
