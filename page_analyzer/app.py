@@ -18,7 +18,7 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
 app = Flask(__name__)
-app.secret_key = 'sdfsggao23ko3t89*U$t4nt4*H#rhfnsdnm,'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 
 @app.route('/')
@@ -67,8 +67,8 @@ def urls_add():
 def get_urls():
     cur = conn.cursor()
     cur.execute('SELECT urls.id, urls.name,'
-                'MAX(url_checks.status_code),'
-                'MAX(url_checks.created_at) '
+                'MAX(url_checks.created_at), '
+                'MAX(url_checks.status_code) '
                 'FROM urls '
                 'LEFT JOIN url_checks '
                 'ON urls.id = url_checks.url_id '
@@ -112,19 +112,19 @@ def urls_id_checks_post(id):
         code = r.status_code
         html = r.text
         soup = BeautifulSoup(html, 'html.parser')
-        tag = {'h1': soup.find('h1').text if soup.find('h1').text else '',
-               'title': soup.find('title').text if soup.find('title').text else '',
-               'meta': soup.find('meta').get('content') if soup.find('meta').get('content') else ''
+        tag = {'h1': ' ',
+               'title': ' ',
+               'meta': ' '
                }
-        # for t in tag:
-        #     if soup.find(t):
-        #         if soup.find('meta').get('content'):
-        #             tag['meta'] =
-        #             pass
-        #         tag[t] = soup.find(t).text
-        print(tag)
+        for t in tag:
+            if soup.find(t) is not None:
+                if t == 'meta' and soup.find('meta').get('content') is not None:
+                    tag['meta'] = soup.find('meta').get('content')
+                    break
+                tag[t] = soup.find(t).text
         cur = conn.cursor()
-        cur.execute('INSERT INTO url_checks (url_id, created_at, status_code, h1, description, title) '
+        cur.execute('INSERT INTO url_checks (url_id,'
+                    'created_at, status_code, h1, description, title) '
                     'VALUES ((%s), (%s), (%s), (%s), (%s), (%s));',
                     (id, dt, code, tag['h1'], tag['meta'], tag['title']))
         cur.close()
