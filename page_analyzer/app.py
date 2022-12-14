@@ -5,7 +5,7 @@ from flask import (
     request, redirect,
     flash, get_flashed_messages,
     url_for)
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 import psycopg2
 import os
 import validators
@@ -13,15 +13,15 @@ import datetime
 
 
 # Connect to your postgres DB
-dotenv_values()
+load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-print(DATABASE_URL)
+print('СМОТРИ СЮДА ЭТО DATABASE', os.getenv('DATABASE_URL'))
 conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
 app = Flask(__name__)
 SECRET_KEY = os.getenv('SECRET_KEY')
 app.secret_key = SECRET_KEY
-print(SECRET_KEY)
+print('СМОТРИ СЮДА ЭТО SECRET KEY', os.getenv('SECRET_KEY'))
 
 
 @app.route('/')
