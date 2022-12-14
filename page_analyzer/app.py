@@ -13,15 +13,14 @@ import datetime
 
 
 # Connect to your postgres DB
+
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-print('СМОТРИ СЮДА ЭТО DATABASE', os.getenv('DATABASE_URL'))
 conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
 app = Flask(__name__)
 SECRET_KEY = os.getenv('SECRET_KEY')
 app.secret_key = SECRET_KEY
-print('СМОТРИ СЮДА ЭТО SECRET KEY', os.getenv('SECRET_KEY'))
 
 
 @app.route('/')
@@ -66,7 +65,7 @@ def urls_add():
     return redirect(url_for('index'))
 
 
-@app.get('/urls/')
+@app.get('/urls')
 def get_urls():
     cur = conn.cursor()
     cur.execute('SELECT urls.id, urls.name,'
@@ -84,7 +83,7 @@ def get_urls():
                            )
 
 
-@app.get('/urls/<int:id>/')
+@app.get('/urls/<int:id>')
 def show_url(id):
     cur = conn.cursor()
     cur.execute('SELECT * FROM urls WHERE id=(%s);',
@@ -133,6 +132,8 @@ def urls_id_checks_post(id):
         cur.close()
         flash('Страница успешно проверена')
         return redirect(url_for('show_url', id=id))
-    except requests.exceptions.RequestException:
+    except Exception:
+        pass
+    finally:
         flash('Произошла ошибка при проверке')
         return redirect(url_for('show_url', id=id))
