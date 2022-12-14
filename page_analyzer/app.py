@@ -13,7 +13,7 @@ import datetime
 
 
 # Connect to your postgres DB
-dotenv_values()
+dotenv_values(".env")
 DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
 conn.autocommit = True
