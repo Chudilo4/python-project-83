@@ -109,6 +109,8 @@ def urls_id_checks_post(id):
         site = cur.fetchone()
         r = requests.get(site[0])
         code = r.status_code
+        if r.raise_for_status():
+            raise app.logger.debug(f'{code}')
         html = r.text
         soup = BeautifulSoup(html, 'html.parser')
         tag = {'h1': ' ',
@@ -129,6 +131,6 @@ def urls_id_checks_post(id):
         cur.close()
         flash('Страница успешно проверена', 'success')
         return redirect(url_for('show_url', id=id))
-    except requests.exceptions.RequestException:
+    except requests.exceptions.HTTPError as e:
         flash('Произошла ошибка при проверке', 'danger')
         return redirect(url_for('show_url', id=id))
