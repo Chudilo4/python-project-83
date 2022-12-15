@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from flask import (
     Flask, render_template,
     request, redirect,
-    flash, get_flashed_messages,
+    flash,
     url_for)
 from dotenv import load_dotenv
 import psycopg2
@@ -93,11 +93,9 @@ def show_url(id):
                 (id,))
     site2 = cur.fetchall()
     cur.close()
-    mssg = get_flashed_messages(with_categories=True)
     return render_template('show_url.html',
                            site=site,
                            site2=site2,
-                           mssg=mssg
                            )
 
 
