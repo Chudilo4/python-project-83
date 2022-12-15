@@ -61,7 +61,7 @@ def urls_add():
         flash('Страница успешно добавлена', 'success')
         return redirect(url_for('show_url', id=id_find[0]))
     flash('Некорректный URL', 'danger')
-    return redirect(url_for('index'))
+    return redirect(url_for('index')), 422
 
 
 @app.get('/urls')
