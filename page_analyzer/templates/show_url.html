@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-    {% for category, msg in get_flashed_messages(with_categories=True) %}
+    {% for category, msg in mssg %}
         {% if category %}
             <div class="alert alert-{{ category }}" role="alert">{{msg}}</div>
         {%  endif %}
