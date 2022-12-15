@@ -24,7 +24,7 @@ app.secret_key = SECRET_KEY
 
 @app.route('/')
 def index():
-    messages = get_flashed_messages()
+    messages = get_flashed_messages(with_categories=True)
     return render_template(
         'home.html',
         title='Анализатор страниц',
@@ -32,7 +32,7 @@ def index():
     )
 
 
-@app.post('/urls/add')
+@app.post('/urls')
 def urls_add():
     dt = datetime.datetime.now()
     form = request.form.to_dict()
@@ -48,7 +48,7 @@ def urls_add():
         print(id_find)
         # Если такая запись в БД уже есть
         if id_find:
-            flash('Такой сайт уже есть')
+            flash('Страница уже существует', 'success')
             return redirect(url_for('show_url', id=id_find[0]))
         # Продолжаем если в базе записи нет
         cur = conn.cursor()
@@ -58,9 +58,9 @@ def urls_add():
                     (form['url'],))
         id_find = cur.fetchone()
         cur.close()
-        flash('Страница успешно добавлена')
+        flash('Страница успешно добавлена', 'success')
         return redirect(url_for('show_url', id=id_find[0]))
-    flash('Не верный URL')
+    flash('Некорректный URL', 'danger')
     return redirect(url_for('index'))
 
 
@@ -93,7 +93,7 @@ def show_url(id):
                 (id,))
     site2 = cur.fetchall()
     cur.close()
-    messages = get_flashed_messages()
+    messages = get_flashed_messages(with_categories=True)
     return render_template('show_url.html',
                            site=site,
                            site2=site2,
@@ -129,10 +129,9 @@ def urls_id_checks_post(id):
                     'VALUES ((%s), (%s), (%s), (%s), (%s), (%s));',
                     (id, dt, code, tag['h1'], tag['meta'], tag['title']))
         cur.close()
-        flash('Страница успешно проверена')
+        flash('Страница успешно проверена', 'success')
         return redirect(url_for('show_url', id=id))
     except Exception:
-        pass
-    finally:
-        flash('Произошла ошибка при проверке')
+        flash('Произошла ошибка при проверке', 'danger')
         return redirect(url_for('show_url', id=id))
+
