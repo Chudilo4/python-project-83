@@ -22,13 +22,13 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 app.secret_key = SECRET_KEY
 
 
-@app.route('/')
+@app.route('/',  methods=["GET"])
 def index():
     messages = get_flashed_messages(with_categories=True)
     return render_template(
         'home.html',
         title='Анализатор страниц',
-        messages=messages
+        messages=messages,
     )
 
 
@@ -45,7 +45,6 @@ def urls_add():
                     (form['url'],))
         id_find = cur.fetchone()
         cur.close()
-        print(id_find)
         # Если такая запись в БД уже есть
         if id_find:
             flash('Страница уже существует', 'success')
@@ -60,8 +59,9 @@ def urls_add():
         cur.close()
         flash('Страница успешно добавлена', 'success')
         return redirect(url_for('show_url', id=id_find[0]))
-    flash('Некорректный URL', 'danger')
-    return redirect(url_for('index')), 422
+    else:
+        flash('Некорректный URL', 'danger')
+        return redirect(url_for('index')), 302
 
 
 @app.get('/urls')

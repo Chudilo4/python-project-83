@@ -2,10 +2,8 @@
 {% block content %}
 {% if messages %}
     {% for category, msg in messages %}
-        {% if category.info %}
-            <div class="alert alert-success" role="alert">{{messages[0]}}</div>
-        {% elif category.error %}
-            <div class="alert alert-danger" role="alert">{{messages[0]}}</div>
+        {% if category %}
+            <div class="alert alert-{{ category }}" role="alert">{{msg}}</div>
         {%  endif %}
   {% endfor %}
 {% endif %}
