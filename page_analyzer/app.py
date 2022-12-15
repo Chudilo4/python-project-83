@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from flask import (
     Flask, render_template,
     request, redirect,
-    flash, get_flashed_messages,
+    flash,
     url_for)
 from dotenv import load_dotenv
 import psycopg2
@@ -22,13 +22,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 app.secret_key = SECRET_KEY
 
 
-@app.route('/',  methods=["GET"])
+@app.get('/')
 def index():
-    messages = get_flashed_messages(with_categories=True)
     return render_template(
         'home.html',
         title='Анализатор страниц',
-        messages=messages,
     )
 
 
@@ -49,7 +47,7 @@ def urls_add():
         if id_find:
             flash('Страница уже существует', 'success')
             return redirect(url_for('show_url', id=id_find[0]))
-        # Продолжаем если в базе записи нет
+            # Продолжаем если в базе записи нет
         cur = conn.cursor()
         cur.execute("INSERT INTO urls (name, created_at) VALUES (%s, %s);",
                     (form['url'], dt))
@@ -61,7 +59,9 @@ def urls_add():
         return redirect(url_for('show_url', id=id_find[0]))
     else:
         flash('Некорректный URL', 'danger')
-        return redirect(url_for('index')), 302
+        return render_template('home.html',
+                               title='Анализатор страниц',
+                               ), 422
 
 
 @app.get('/urls')
@@ -93,11 +93,9 @@ def show_url(id):
                 (id,))
     site2 = cur.fetchall()
     cur.close()
-    messages = get_flashed_messages(with_categories=True)
     return render_template('show_url.html',
                            site=site,
                            site2=site2,
-                           messages=messages
                            )
 
 
