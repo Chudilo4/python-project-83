@@ -61,7 +61,7 @@ def urls_add():
         flash('Страница успешно добавлена', 'success')
         return redirect(url_for('show_url', id=id_find[0]))
     flash('Некорректный URL', 'danger')
-    return redirect(url_for('index'))
+    return redirect(url_for('index')), 422
 
 
 @app.get('/urls')
@@ -133,5 +133,5 @@ def urls_id_checks_post(id):
         return redirect(url_for('show_url', id=id))
     except Exception:
         flash('Произошла ошибка при проверке', 'danger')
-        return redirect(url_for('show_url', id=id))
+        return redirect(url_for('show_url', id=id)), 422
 
